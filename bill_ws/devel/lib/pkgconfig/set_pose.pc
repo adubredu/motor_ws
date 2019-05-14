@@ -1,0 +1,8 @@
+prefix=/home/ubuntu/bill_ros/bill_ws/devel
+
+Name: set_pose
+Description: Description of set_pose
+Version: 0.0.0
+Cflags: -I/home/ubuntu/bill_ros/bill_ws/devel/include
+Libs: -L/home/ubuntu/bill_ros/bill_ws/devel/lib 
+Requires: 

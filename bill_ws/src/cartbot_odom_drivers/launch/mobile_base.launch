@@ -1,0 +1,8 @@
+<launch>
+	<!-- <node name="run_motors" pkg="cartbot_odom_drivers" type="run_motors.py"  respawn="true"/> -->
+	<node name="encoder_ticks"   pkg="cartbot_odom_drivers" type="publish_encoder.py" respawn="true"/>
+	<!-- <node name="l_pid_velocity" pkg="cartbot_odom_drivers" type="l_pid_velocity.py" respawn="true" /> -->
+	<!-- <node name="r_pid_velocity" pkg="cartbot_odom_drivers" type="r_pid_velocity.py" respawn="true" /> -->
+	<node name="twist_to_motors" pkg="cartbot_odom_drivers" type="twist_to_motors.py" respawn="true" />
+	<node name="diff_tf" pkg="cartbot_odom_drivers" type="diff_tf.py" respawn="true" />
+</launch>

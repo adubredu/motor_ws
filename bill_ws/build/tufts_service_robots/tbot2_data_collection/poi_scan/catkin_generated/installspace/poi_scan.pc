@@ -1,0 +1,8 @@
+prefix=/home/ubuntu/bill_ros/bill_ws/install
+
+Name: poi_scan
+Description: Description of poi_scan
+Version: 0.0.0
+Cflags: -I/home/ubuntu/bill_ros/bill_ws/install/include
+Libs: -L/home/ubuntu/bill_ros/bill_ws/install/lib 
+Requires: 

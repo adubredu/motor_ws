@@ -1,5 +1,0 @@
-<launch>
-	<node pkg="cartbot_planning" type="run_motors.py" name="run_motors" />
-	
-
-</launch>

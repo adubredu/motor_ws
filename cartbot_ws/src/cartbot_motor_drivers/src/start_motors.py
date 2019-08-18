@@ -37,37 +37,37 @@ class SendSpeedToMotors():
     def send_speed_to_motors(self):
     #############################################################
     
-    	#stop
-		if self.dr == 0 and self.dx == 0:
-			self.my_drive.axis1.controller.vel_setpoint = 0
-	        self.my_drive.axis0.controller.vel_setpoint = 0
+        #stop
+        if self.dr == 0 and self.dx == 0:
+            self.my_drive.axis1.controller.vel_setpoint = 0
+            self.my_drive.axis0.controller.vel_setpoint = 0
 
-	    #turn left
-		if self.dr < 0 and self.dx == 0:
-			self.my_drive.axis1.controller.vel_setpoint = -10
-	        self.my_drive.axis0.controller.vel_setpoint = -10
+        #turn left
+        if self.dr < 0 and self.dx == 0:
+            self.my_drive.axis1.controller.vel_setpoint = -10
+            self.my_drive.axis0.controller.vel_setpoint = -10
 
-	    #turn right
-		elif self.dr > 0 and self.dx == 0:
-			self.my_drive.axis1.controller.vel_setpoint = 10
-	        self.my_drive.axis0.controller.vel_setpoint = 10
+        #turn right
+        elif self.dr > 0 and self.dx == 0:
+            self.my_drive.axis1.controller.vel_setpoint = 10
+            self.my_drive.axis0.controller.vel_setpoint = 10
 
-	    #move forward
-		elif self.dx > 0 and self.dr == 0:
-			self.my_drive.axis1.controller.vel_setpoint = -40
-	        self.my_drive.axis0.controller.vel_setpoint = 40
+        #move forward
+        elif self.dx > 0 and self.dr == 0:
+            self.my_drive.axis1.controller.vel_setpoint = -40
+            self.my_drive.axis0.controller.vel_setpoint = 40
 
-	    #move backward
-		elif self.dx < 0 and self.dr == 0:
-			self.my_drive.axis1.controller.vel_setpoint = 40
-	        self.my_drive.axis0.controller.vel_setpoint = -40
+        #move backward
+        elif self.dx < 0 and self.dr == 0:
+            self.my_drive.axis1.controller.vel_setpoint = 40
+            self.my_drive.axis0.controller.vel_setpoint = -40
 
-		#move forward left
-		elif self.dr < 0 and self.dx > 0:
+        #move forward left
+        elif self.dr < 0 and self.dx > 0:
             self.my_drive.axis1.controller.vel_setpoint = -60
             self.my_drive.axis0.controller.vel_setpoint = 45
 
-	    #move backward right
+        #move backward right
         elif self.dr > 0 and self.dx < 0:
             self.my_drive.axis1.controller.vel_setpoint = 45
             self.my_drive.axis0.controller.vel_setpoint = -60

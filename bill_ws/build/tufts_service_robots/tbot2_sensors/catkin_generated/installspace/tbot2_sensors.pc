@@ -1,8 +1,0 @@
-prefix=/home/ubuntu/bill_ros/bill_ws/install
-
-Name: tbot2_sensors
-Description: Description of tbot2_sensors
-Version: 0.0.0
-Cflags: 
-Libs: -L/home/ubuntu/bill_ros/bill_ws/install/lib 
-Requires: 

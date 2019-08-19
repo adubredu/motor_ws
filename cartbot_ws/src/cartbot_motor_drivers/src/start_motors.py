@@ -29,6 +29,10 @@ class SendSpeedToMotors():
         self.my_drive.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
         self.my_drive.axis1.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
 
+        self.cart_width = 0.64
+        self.wheel_diameter = 0.16
+        self.speed_gain = 60
+
         rospy.Subscriber('cmd_vel', Twist, self.twistCallback)
         rospy.spin()
         
@@ -37,20 +41,21 @@ class SendSpeedToMotors():
     def send_speed_to_motors(self):
     #############################################################
     
+        '''
         #stop
         if self.dr == 0 and self.dx == 0:
             self.my_drive.axis1.controller.vel_setpoint = 0
             self.my_drive.axis0.controller.vel_setpoint = 0
 
         #turn left
-        if self.dr < 0 and self.dx == 0:
-            self.my_drive.axis1.controller.vel_setpoint = -10
-            self.my_drive.axis0.controller.vel_setpoint = -10
+        if self.dr > 0 and self.dx == 0:
+            self.my_drive.axis1.controller.vel_setpoint = -20
+            self.my_drive.axis0.controller.vel_setpoint = -20
 
         #turn right
-        elif self.dr > 0 and self.dx == 0:
-            self.my_drive.axis1.controller.vel_setpoint = 10
-            self.my_drive.axis0.controller.vel_setpoint = 10
+        elif self.dr < 0 and self.dx == 0:
+            self.my_drive.axis1.controller.vel_setpoint = 20
+            self.my_drive.axis0.controller.vel_setpoint = 20
 
         #move forward
         elif self.dx > 0 and self.dr == 0:
@@ -82,6 +87,17 @@ class SendSpeedToMotors():
             self.my_drive.axis1.controller.vel_setpoint = 60
             self.my_drive.axis0.controller.vel_setpoint = -45
 
+        '''
+        left_motor_speed  = (self.dx - self.dr * (self.cart_width/2))*self.speed_gain
+        right_motor_speed = (self.dx + self.dr * (self.cart_width/2))*self.speed_gain
+
+        self.my_drive.axis1.controller.vel_setpoint = -left_motor_speed
+        self.my_drive.axis0.controller.vel_setpoint = right_motor_speed
+
+        # print(left_motor_speed," --- ", right_motor_speed)
+
+
+
 
 
     #############################################################
@@ -90,7 +106,7 @@ class SendSpeedToMotors():
         # rospy.loginfo("-D- twistCallback: %s" % str(msg))
         self.ticks_since_target = 0
         self.dx = msg.linear.x
-        self.dr = -1*msg.angular.z
+        self.dr = msg.angular.z
         self.dy = msg.linear.y
         self.send_speed_to_motors()
     

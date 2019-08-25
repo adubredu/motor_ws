@@ -127,8 +127,7 @@ int main(int argc, char** argv)
 
  	 else if (joySpeed == 0)
  	 {
- 	 	 if (vehicleSpeed > 0) vehicleSpeed -= maxAccel / 100.0;
-        else if (vehicleSpeed < 0) vehicleSpeed += maxAccel / 100.0;
+ 	 	 vehicleSpeed= 0;
  	 }
 
  	 cmd_spd.linear.x = vehicleSpeed;

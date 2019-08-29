@@ -10,8 +10,9 @@
 #include <nav_msgs/Path.h>
 #include <nav_msgs/Odometry.h>
 #include <geometry_msgs/Twist.h>
-#include <geometry_msgs/PointStamped>
+#include <geometry_msgs/PointStamped.h>
 #include <sensor_msgs/Joy.h>
+#include <std_msgs/Bool.h>
 
 using namespace std;
 
@@ -118,7 +119,7 @@ void autonomyMode_activate(const std_msgs::Bool::ConstPtr& data)
   else
   {
     autonomyMode = false;
-    autonomySpeed = 0
+    autonomySpeed = 0;
   }
 }
 
@@ -144,12 +145,12 @@ int main(int argc, char** argv)
   	ros::spinOnce();
     if (autonomyMode)
     {
-      pathDir = atan2((goalY - robotY), (goalX - robotX));
+      float pathDir = atan2((goalY - robotY), (goalX - robotX));
       float dirDiff = robotYaw - pathDir;
       if (dirDiff > PI) dirDiff -= 2*PI;
       else if (dirDiff < -PI) dirDiff += 2*PI;
 
-      joySpeed2 = maxSpeed * autonomySpeed;
+      double joySpeed2 = maxSpeed * autonomySpeed;
 
       robotYawRate = dirDiff;
       if (robotYawRate > maxYawRate) 

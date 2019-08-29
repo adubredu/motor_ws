@@ -1,0 +1,2 @@
+bill_teleop_joy:cartbot_motor_drivers:catkin_simple
+-DCATKIN_DEVEL_PREFIX=/home/ubuntu/cartbot_mobilebase_subsystem/cartbot_ws/devel -DCMAKE_INSTALL_PREFIX=/home/ubuntu/cartbot_mobilebase_subsystem/cartbot_ws/install -G Unix Makefiles

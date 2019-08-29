@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/ubuntu/cartbot_mobilebase_subsystem/cartbot_ws/devel/setup.sh

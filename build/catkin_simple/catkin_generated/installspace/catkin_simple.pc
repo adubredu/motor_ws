@@ -1,0 +1,8 @@
+prefix=/home/ubuntu/cartbot_mobilebase_subsystem/cartbot_ws/install
+
+Name: catkin_simple
+Description: Description of catkin_simple
+Version: 0.1.1
+Cflags: 
+Libs: -L/home/ubuntu/cartbot_mobilebase_subsystem/cartbot_ws/install/lib 
+Requires: catkin

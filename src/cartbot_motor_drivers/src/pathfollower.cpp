@@ -10,6 +10,7 @@
 #include <nav_msgs/Path.h>
 #include <nav_msgs/Odometry.h>
 #include <geometry_msgs/Twist.h>
+#include <geometry_msgs/PointStamped>
 #include <sensor_msgs/Joy.h>
 
 using namespace std;
@@ -36,22 +37,22 @@ double joyToSpeedDelay = 5.0;
 float joySpeed = 0;
 float joyYaw = 0;
 
-float vehicleX = 0;
-float vehicleY = 0;
-float vehicleZ = 0.5;
-float vehicleRoll = 0;
-float vehiclePitch = 0;
-float vehicleYaw = 0;
+float robotX = 0;
+float robotY = 0;
+float robotZ = 0.5;
+float robotRoll = 0;
+float robotPitch = 0;
+float robotYaw = 0;
 
-float vehicleXRec = 0;
-float vehicleYRec = 0;
-float vehicleZRec = 0.5;
-float vehicleRollRec = 0;
-float vehiclePitchRec = 0;
-float vehicleYawRec = 0;
+float robotXRec = 0;
+float robotYRec = 0;
+float robotZRec = 0.5;
+float robotRollRec = 0;
+float robotPitchRec = 0;
+float robotYawRec = 0;
 
-float vehicleYawRate = 0;
-float vehicleSpeed = 0;
+float robotYawRate = 0;
+float robotSpeed = 0;
 
 double odomTime = 0;
 double joyTime = 0;
@@ -60,6 +61,9 @@ int pathInit = false;
 bool navFwd = true;
 double switchTime = 0;
 double real_speed = 1.0;
+
+double goalX = 0, goalY = 0;
+double tolerance = 0.5;
 
 nav_msgs::Path path;
 
@@ -71,12 +75,12 @@ void odomHandler(const nav_msgs::Odometry::ConstPtr& odomIn)
   geometry_msgs::Quaternion geoQuat = odomIn->pose.pose.orientation;
   tf::Matrix3x3(tf::Quaternion(geoQuat.x, geoQuat.y, geoQuat.z, geoQuat.w)).getRPY(roll, pitch, yaw);
 
-  vehicleRoll = roll;
-  vehiclePitch = pitch;
-  vehicleYaw = yaw;
-  vehicleX = odomIn->pose.pose.position.x - cos(yaw) * sensorOffsetX + sin(yaw) * sensorOffsetY;
-  vehicleY = odomIn->pose.pose.position.y - sin(yaw) * sensorOffsetX - cos(yaw) * sensorOffsetY;
-  vehicleZ = odomIn->pose.pose.position.z;
+  robotRoll = roll;
+  robotPitch = pitch;
+  robotYaw = yaw;
+  robotX = odomIn->pose.pose.position.x - cos(yaw) * sensorOffsetX + sin(yaw) * sensorOffsetY;
+  robotY = odomIn->pose.pose.position.y - sin(yaw) * sensorOffsetX - cos(yaw) * sensorOffsetY;
+  robotZ = odomIn->pose.pose.position.z;
 }
 
 
@@ -88,6 +92,36 @@ void joystickHandler(const sensor_msgs::Joy::ConstPtr& joy)
   joyYaw = joy->axes[4];
 }
 
+void waypointHandler(const geometry_msgs::PointStamped::ConstPtr& goal)
+{
+  goalX = goal->point.x;
+  goalY = goal->point.y;
+}
+
+bool goalReached()
+{
+  double distance = sqrt(pow((robotX - goalX),2) + pow((robotY - goalY),2));
+  if (distance < tolerance)
+    return true;
+
+  return false;
+}
+
+
+void autonomyMode_activate(const std_msgs::Bool::ConstPtr& data)
+{
+  if (data->data)
+  {
+    autonomyMode = true;
+    autonomySpeed = 1.0;
+  }
+  else
+  {
+    autonomyMode = false;
+    autonomySpeed = 0
+  }
+}
+
 
 
 int main(int argc, char** argv)
@@ -97,6 +131,7 @@ int main(int argc, char** argv)
 
   ros::Subscriber subOdom = nh.subscribe<nav_msgs::Odometry> ("/state_estimation", 5, odomHandler);
   ros::Subscriber subJoystick = nh.subscribe<sensor_msgs::Joy> ("/joy", 5, joystickHandler);
+  ros::Subscriber subGoal = nh.subscribe<geometry_msgs::PointStamped> ("/way_point", 5, waypointHandler);
   ros::Publisher pubSpeed = nh.advertise<geometry_msgs::Twist>("/cmd_vel",5);
   geometry_msgs::Twist cmd_spd;
 
@@ -106,43 +141,55 @@ int main(int argc, char** argv)
   while(status)
   {
   	ros::spinOnce();
-  	float pathDir = joyYaw; //or atan2(disY,disX) to waypoint
-  	float dirDiff = vehicleYaw - pathDir;
+    if (autonomyMode)
+    {
+      pathDir = atan2((goalY - robotY), (goalX - robotX));
+      float dirDiff = robotYaw - pathDir;
+      if (dirDiff > PI) dirDiff -= 2*PI;
+      else if (dirDiff < -PI) dirDiff += 2*PI;
 
-  	if (dirDiff > PI) dirDiff -= 2*PI;
-  	else if (dirDiff < -PI) dirDiff += 2*PI;
+      joySpeed2 = maxSpeed * autonomySpeed;
 
-  	float joySpeed2 = maxSpeed * joySpeed;
-	
-	if (autonomyMode)
-	{
-  		vehicleYawRate = dirDiff;
-  		if (vehicleYawRate > maxYawRate) vehicleYawRate = maxYawRate;
-		else if (vehicleYawRate < -maxYawRate) vehicleYawRate = -maxYawRate;
-	}
-	else
-	{
-		vehicleYawRate = joyYaw;
-	}
+      robotYawRate = dirDiff;
+      if (robotYawRate > maxYawRate) 
+        robotYawRate = maxYawRate;
+      else if (robotYawRate < -maxYawRate) 
+        robotYawRate = -maxYawRate;
 
-	
+      robotYawRate *= autonomySpeed;
 
-     if (joySpeed != 0)
-     {
-	     if (vehicleSpeed < joySpeed2) vehicleSpeed += maxAccel / 100.0;
-	     else if (vehicleSpeed > joySpeed2) vehicleSpeed -= maxAccel / 100.0;
- 	 }
+      if (robotSpeed < joySpeed2) robotSpeed += maxAccel / 100.0;
+      else if (robotSpeed > joySpeed2) robotSpeed -= maxAccel / 100.0;
 
- 	 else if (joySpeed == 0)
- 	 {
- 	 	 vehicleSpeed= 0;
- 	 }
-	
-	if (joyYaw == 0)
-		vehicleYawRate = 0;
+      if (goalReached())
+      {
+          autonomySpeed = 0;
+          robotSpeed = 0;
+          robotYawRate = 0;
+      }
 
- 	 cmd_spd.linear.x = vehicleSpeed;
- 	 cmd_spd.angular.z = vehicleYawRate;
+    }
+
+    else
+    {
+      float joySpeed2 = maxSpeed * joySpeed;
+      robotYawRate = joyYaw;
+
+       if (joySpeed != 0)
+       {
+         if (robotSpeed < joySpeed2) robotSpeed += maxAccel / 100.0;
+         else if (robotSpeed > joySpeed2) robotSpeed -= maxAccel / 100.0;
+       }
+
+       else if (joySpeed == 0)
+         robotSpeed= 0;
+      
+        if (joyYaw == 0)
+          robotYawRate = 0;
+    }
+  	
+ 	 cmd_spd.linear.x = robotSpeed;
+ 	 cmd_spd.angular.z = robotYawRate;
  	 pubSpeed.publish(cmd_spd);
 
  	 status = ros::ok();

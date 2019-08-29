@@ -82,10 +82,10 @@ void odomHandler(const nav_msgs::Odometry::ConstPtr& odomIn)
 
 void joystickHandler(const sensor_msgs::Joy::ConstPtr& joy)
 {
-  joySpeed = sqrt(pow(joy->axes[0],2) + pow(joy->axes[1],2));
-    if (joy->axes[1] == 0) joySpeed = 0;
-    if (joy->axes[1] < 0) joySpeed*=-1;
-  joyYaw = joy->axes[0];
+  joySpeed = sqrt(pow(joy->axes[4],2) + pow(joy->axes[5],2));
+    if (joy->axes[5] == 0) joySpeed = 0;
+    if (joy->axes[5] < 0) joySpeed*=-1;
+  joyYaw = joy->axes[4];
 }
 
 
@@ -113,11 +113,19 @@ int main(int argc, char** argv)
   	else if (dirDiff < -PI) dirDiff += 2*PI;
 
   	float joySpeed2 = maxSpeed * joySpeed;
+	
+	if (autonomyMode)
+	{
+  		vehicleYawRate = dirDiff;
+  		if (vehicleYawRate > maxYawRate) vehicleYawRate = maxYawRate;
+		else if (vehicleYawRate < -maxYawRate) vehicleYawRate = -maxYawRate;
+	}
+	else
+	{
+		vehicleYawRate = joyYaw;
+	}
 
-  	vehicleYawRate = dirDiff;
-
-  	if (vehicleYawRate > maxYawRate) vehicleYawRate = maxYawRate;
-    else if (vehicleYawRate < -maxYawRate) vehicleYawRate = -maxYawRate;
+	
 
      if (joySpeed != 0)
      {
@@ -129,6 +137,9 @@ int main(int argc, char** argv)
  	 {
  	 	 vehicleSpeed= 0;
  	 }
+	
+	if (joyYaw == 0)
+		vehicleYawRate = 0;
 
  	 cmd_spd.linear.x = vehicleSpeed;
  	 cmd_spd.angular.z = vehicleYawRate;

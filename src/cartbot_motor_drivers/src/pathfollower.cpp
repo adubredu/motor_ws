@@ -109,6 +109,26 @@ bool goalReached()
 }
 
 
+bool waypoint_forward()
+{
+  bool waypoint_forward = true;
+  double pointX = goalX - robotX;
+  double pointY = goalY - robotY;
+  double x = pointX * cos(robotYaw) + pointY * sin(robotYaw);
+  double y = -pointX * sin(robotYaw) + pointY * cos(robotYaw);
+
+  double ang = atan2(x,y);
+  if (ang > 0){
+    waypoint_forward = true;
+  }
+  else if (ang < 0){
+    waypoint_forward = false;
+  }
+
+  return waypoint_forward;
+}
+
+
 void autonomyMode_activate(const std_msgs::Bool::ConstPtr& data)
 {
   if (data->data)
@@ -162,6 +182,9 @@ int main(int argc, char** argv)
 
       if (robotSpeed < joySpeed2) robotSpeed += maxAccel / 100.0;
       else if (robotSpeed > joySpeed2) robotSpeed -= maxAccel / 100.0;
+
+      if (not waypoint_forward())
+        robotSpeed = 0;
 
       if (goalReached())
       {

@@ -189,7 +189,6 @@ int main(int argc, char** argv)
 
       if (goalReached())
       {
-          autonomySpeed = 0;
           robotSpeed = 0;
           robotYawRate = 0;
       }

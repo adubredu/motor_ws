@@ -91,6 +91,7 @@ void joystickHandler(const sensor_msgs::Joy::ConstPtr& joy)
     if (joy->axes[5] == 0) joySpeed = 0;
     if (joy->axes[5] < 0) joySpeed*=-1;
   joyYaw = joy->axes[4];
+  autonomyMode = false;
 }
 
 void waypointHandler(const geometry_msgs::PointStamped::ConstPtr& goal)

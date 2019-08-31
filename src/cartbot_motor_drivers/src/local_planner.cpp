@@ -89,8 +89,6 @@ void check_for_occupancy()
 			int ang = atan2(rx,ry)*(180/PI);
 			if (ang < 0) ang =+ 180;
 			if (ang > 180) ang -= 180;
-			cout << ang << endl;
-			// occupancy[ang] = 1;
 			for (int j = ang-5; j<=ang+5; j++)
 				occupancy[j] = 1;
 		}

@@ -70,21 +70,29 @@ void waypointHandler(const geometry_msgs::PointStamped::ConstPtr& goal)
 
 void check_for_occupancy()
 {
+	double sinYaw = sin(robotYaw);
+	double cosYaw = cos(robotYaw);
 	int size = laserCloud->points.size();
 	pcl::PointXYZI point;
 	for (int i=0; i<size; i++)
 	{
 		point = laserCloud->points[i];
 		double x = point.x - robotX; double y = point.y - robotY;
-		double dist = sqrt(pow(x,2) + pow(y,2));
+
+		double rx = x * cosYaw + y * sinYaw;
+		double ry = -x * sinYaw + y * cosYaw;
+
+		double dist = sqrt(pow(rx,2) + pow(ry,2));
 
 		if (dist < range)
 		{
-			int ang = (atan(y/x))*(180/PI);
+			int ang = atan2(rx,ry)*(180/PI);
+			if (ang < 0) ang =+ 180;
+			if (ang > 180) ang -= 180;
 			cout << ang << endl;
-			occupancy[ang] = 1;
-			// for (int j = ang-5; j<=ang+5; j++)
-			// 	occupancy[j] = 1;
+			// occupancy[ang] = 1;
+			for (int j = ang-5; j<=ang+5; j++)
+				occupancy[j] = 1;
 		}
 	}
 }
@@ -129,7 +137,7 @@ void display_alternate_paths()
 			paths.poses[i].position.y = robotY;
 			double rx = arrayX[i] * cosYaw - arrayY[i] * sinYaw;
 			double ry = arrayX[i] * sinYaw + arrayY[i] * cosYaw;
-			double ang = atan((ry)/(rx));
+			double ang = atan(arrayY[i]/arrayX[i]);// atan((ry)/(rx));
 
 			ang += robotYaw;
 			if (ang > PI) ang -= 2*PI;

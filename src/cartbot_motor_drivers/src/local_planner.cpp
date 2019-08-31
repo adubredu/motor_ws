@@ -25,7 +25,7 @@ const double PI = 3.1415926;
 double odomTime = 0, robotRoll = 0, robotPitch = 0, robotYaw = 0;
 double robotX = 0, robotY = 0, robotZ = 0;
 double goalX = 0, goalY = 0;
-const int num_paths = 181;
+const int num_paths = 19;
 int occupancy[num_paths]; double arrayX[num_paths]; double arrayY[num_paths]; double score[num_paths];
 double occX[num_paths]; double occY[num_paths];
 double range = 1.0;
@@ -89,7 +89,8 @@ void check_for_occupancy()
 			int ang = atan2(rx,ry)*(180/PI);
 			if (ang < 0) ang =+ 180;
 			if (ang > 180) ang -= 180;
-			for (int j = ang-5; j<=ang+5; j++)
+			// occupancy[ang/10] = 1;
+			for (int j = (ang/10)-2; j<=(ang/10)+2; j++)
 				occupancy[j] = 1;
 		}
 	}
@@ -165,16 +166,16 @@ void display_alternate_paths()
 
 void generate_alternate_paths()
 {
-	for (int i=0; i<=90; i++)
+	for (int i=0; i<=9; i++)
 	{
-		arrayX[i] = range * sin(i*(PI/180));
-		arrayY[i] = range * cos(i*(PI/180));
+		arrayX[i] = range * sin((i*10)*(PI/180));
+		arrayY[i] = range * cos((i*10)*(PI/180));
 	}
 
-	for (int i=91; i<=180; i++)
+	for (int i=10; i<=18; i++)
 	{
-		arrayX[i] = range * sin(i*(PI/180));
-		arrayY[i] = range * cos(i*(PI/180));
+		arrayX[i] = range * sin((i*10)*(PI/180));
+		arrayY[i] = range * cos((i*10)*(PI/180));
 	}
 
 	

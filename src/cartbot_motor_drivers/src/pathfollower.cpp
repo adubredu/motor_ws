@@ -153,7 +153,7 @@ int main(int argc, char** argv)
 
   ros::Subscriber subOdom = nh.subscribe<nav_msgs::Odometry> ("/state_estimation", 5, odomHandler);
   ros::Subscriber subJoystick = nh.subscribe<sensor_msgs::Joy> ("/joy", 5, joystickHandler);
-  ros::Subscriber subGoal = nh.subscribe<geometry_msgs::PointStamped> ("/way_point", 5, waypointHandler);
+  ros::Subscriber subGoal = nh.subscribe<geometry_msgs::PointStamped> ("/local_waypoint", 5, waypointHandler);
   ros::Subscriber subAutonomy = nh.subscribe<std_msgs::Bool> ("/activate_autonomy", 1, autonomyMode_activate);
   ros::Publisher pubSpeed = nh.advertise<geometry_msgs::Twist>("/cmd_vel",5);
   geometry_msgs::Twist cmd_spd;

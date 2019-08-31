@@ -33,11 +33,13 @@ ros::Publisher pubPoint;
 ros::Publisher pubAltPath;
 ros::Publisher pubAltWaypoints;
 
+bool waypoint_received = false;
+
 pcl::PointCloud<pcl::PointXYZI>::Ptr waypoints(new pcl::PointCloud<pcl::PointXYZI>());
 pcl::PointCloud<pcl::PointXYZI>::Ptr laserCloud(new pcl::PointCloud<pcl::PointXYZI>());
+geometry_msgs::PointStamped in_waypoint;
 
-
-
+///
 void odomHandler(const nav_msgs::Odometry::ConstPtr& odomIn)
 {
   odomTime = odomIn->header.stamp.toSec();
@@ -54,20 +56,45 @@ void odomHandler(const nav_msgs::Odometry::ConstPtr& odomIn)
   robotZ = odomIn->pose.pose.position.z;
 }
 
-
+///
 void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloud2)
 {
 	laserCloud->clear();
 	pcl::fromROSMsg(*laserCloud2, *laserCloud);
 }
 
+///
 void waypointHandler(const geometry_msgs::PointStamped::ConstPtr& goal)
 {
   goalX = goal->point.x;
   goalY = goal->point.y;
+
+  in_waypoint.header = goal->header;
+  in_waypoint.point = goal->point;
+  waypoint_received = true;
 }
 
+///
+bool waypoint_forward()
+{
+  bool waypoint_forward = true;
+  double pointX = goalX - robotX;
+  double pointY = goalY - robotY;
+  double x = pointX * cos(robotYaw) + pointY * sin(robotYaw);
+  double y = -pointX * sin(robotYaw) + pointY * cos(robotYaw);
 
+  double ang = atan2(x,y);
+  if (ang >= 0){
+    waypoint_forward = true;
+  }
+  else if (ang < 0){
+    waypoint_forward = false;
+  }
+
+  return waypoint_forward;
+}
+
+///
 void check_for_occupancy()
 {
 	double sinYaw = sin(robotYaw);
@@ -96,11 +123,14 @@ void check_for_occupancy()
 	}
 }
 
+///
 void initialize_occupancy()
 {
 	for (int i=0; i<num_paths; i++)
 		occupancy[i] = 0;
 }
+
+///
 void initialize_arrays()
 {
 	for (int i=0; i<num_paths; i++)
@@ -115,7 +145,71 @@ void initialize_arrays()
 	}
 }
 
+///
+int arg_min(double array[], int size)
+{
+    int index = 0;
 
+    for(int i = 1; i < size; i++)
+    {
+        if(array[i] < array[index])
+            index = i;              
+    }
+
+    return index;
+}
+
+
+void score_alternate_waypoints(double x, double y)
+{
+	for (int i=0; i<num_paths; i++)
+	{
+		if (occupancy[i] == 1)
+			score[i] = 1000;
+		else
+		{
+			double alt_ang = atan2((occY[i]-robotY), (occX[i]-robotX));
+			double wp_ang = atan2((y-robotY), (x-robotX));
+			double sc = fabs(alt_ang-wp_ang);
+			score[i] = sc;
+		}
+	}
+}
+
+///
+void send_chosen_waypoint()
+{
+	if (waypoint_received)
+	{
+		in_waypoint.header.frame_id="map";
+		if (not waypoint_forward())
+		{
+			initialize_occupancy();
+			score_alternate_waypoints(-goalX,-goalY);
+			int ind = arg_min(score, num_paths);
+			in_waypoint.point.x = -occX[ind];
+			in_waypoint.point.y = -occY[ind];
+			pubPoint.publish(in_waypoint);
+
+			// in_waypoint.point.x = -occX[num_paths/2];
+			// in_waypoint.point.y = occY[num_paths/2];
+			// pubPoint.publish(in_waypoint);
+		}
+
+		else
+		{
+			int ind =  arg_min(score, num_paths);
+			in_waypoint.point.x = occX[ind];
+			in_waypoint.point.y = occY[ind];
+			pubPoint.publish(in_waypoint);
+		}
+	}
+}
+
+///
+
+
+///
 void display_alternate_paths()
 {
 	double sinYaw = sin(robotYaw);
@@ -164,6 +258,7 @@ void display_alternate_paths()
 
 }
 
+///
 void generate_alternate_paths()
 {
 	for (int i=0; i<=9; i++)
@@ -176,12 +271,11 @@ void generate_alternate_paths()
 	{
 		arrayX[i] = range * sin((i*10)*(PI/180));
 		arrayY[i] = range * cos((i*10)*(PI/180));
-	}
-
-	
-
+	}	
 }
 
+
+///
 int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "local_planner");
@@ -207,6 +301,8 @@ int main(int argc, char **argv)
   		initialize_occupancy();
   		check_for_occupancy();
   		display_alternate_paths();
+  		score_alternate_waypoints(goalX, goalY);
+  		send_chosen_waypoint();
 
 
   		status = ros::ok();

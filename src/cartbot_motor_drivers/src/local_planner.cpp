@@ -32,6 +32,7 @@ double range = 1.5;
 ros::Publisher pubPoint;
 ros::Publisher pubAltPath;
 ros::Publisher pubAltWaypoints;
+ros::Publisher pubTurn;
 double tolerance = 0.5;
 
 bool waypoint_received = false;
@@ -195,24 +196,32 @@ void send_chosen_waypoint()
 		in_waypoint.header.frame_id="map";
 		if (not waypoint_forward())
 		{
-			initialize_occupancy();
-			score_alternate_waypoints(-goalX,-goalY);
-			int ind = arg_min(score, num_paths);
-			double x = occX[ind];
-			double y = occY[ind];
-			// in_waypoint.point.x = occX[1];
-			// in_waypoint.point.y = occY[1];
-			in_waypoint.point.x =robotX-(x-robotX);
-			in_waypoint.point.y = robotY-(y-robotY);
-			// pubPoint.publish(in_waypoint);
+			// initialize_occupancy();
+			// score_alternate_waypoints(-goalX,-goalY);
+			// int ind = arg_min(score, num_paths);
+			// double x = occX[ind];
+			// double y = occY[ind];
+			// // in_waypoint.point.x = occX[1];
+			// // in_waypoint.point.y = occY[1];
+			// in_waypoint.point.x =robotX-(x-robotX);
+			// in_waypoint.point.y = robotY-(y-robotY);
+			// // pubPoint.publish(in_waypoint);
+
+
+			while(not waypoint_forward())
+			{
+				geometry_msgs::Twist turn;
+				turn.angular.z = -1;
+				pubTurn.publish(turn);
+			}
 		}
 
-		else
-		{
+		//else
+		//{
 			int ind =  arg_min(score, num_paths);
 			in_waypoint.point.x = occX[ind];
 			in_waypoint.point.y = occY[ind];
-		}
+		//}
 
 		if (goalReached())
 		{
@@ -303,6 +312,7 @@ int main(int argc, char **argv)
   	pubPoint = nh.advertise<geometry_msgs::PointStamped>("/local_waypoint",5);
   	pubAltPath = nh.advertise<geometry_msgs::PoseArray>("/alternate_paths",5);
   	pubAltWaypoints = nh.advertise<sensor_msgs::PointCloud2>("/alternate_waypoints",5);
+  	pubTurn = nh.advertise<geometry_msgs::Twist>("/cmd_vel",5);
 
   	initialize_arrays();
 

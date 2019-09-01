@@ -28,7 +28,7 @@ double goalX = 0, goalY = 0;
 const int num_paths = 19;
 int occupancy[num_paths]; double arrayX[num_paths]; double arrayY[num_paths]; double score[num_paths];
 double occX[num_paths]; double occY[num_paths];
-double range = 1.0;
+double range = 1.5;
 ros::Publisher pubPoint;
 ros::Publisher pubAltPath;
 ros::Publisher pubAltWaypoints;
@@ -118,7 +118,7 @@ void check_for_occupancy()
 			if (ang < 0) ang =+ 180;
 			if (ang > 180) ang -= 180;
 			// occupancy[ang/10] = 1;
-			for (int j = (ang/10)-2; j<=(ang/10)+2; j++)
+			for (int j = (ang/10)-4; j<=(ang/10)+4; j++)
 				occupancy[j] = 1;
 		}
 	}
@@ -200,8 +200,8 @@ void send_chosen_waypoint()
 			int ind = arg_min(score, num_paths);
 			double x = occX[ind];
 			double y = occY[ind];
-			// in_waypoint.point.x = -occX[ind];
-			// in_waypoint.point.y = -occY[ind];
+			// in_waypoint.point.x = occX[1];
+			// in_waypoint.point.y = occY[1];
 			in_waypoint.point.x =robotX-(x-robotX);
 			in_waypoint.point.y = robotY-(y-robotY);
 			// pubPoint.publish(in_waypoint);

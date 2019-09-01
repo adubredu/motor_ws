@@ -81,7 +81,7 @@ void waypointHandler(const geometry_msgs::PointStamped::ConstPtr& goal)
 ///
 bool waypoint_forward()
 {
-  bool waypoint_forward = true;
+  bool waypoint_is_forward = true;
   double pointX = goalX - robotX;
   double pointY = goalY - robotY;
   double x = pointX * cos(robotYaw) + pointY * sin(robotYaw);
@@ -89,13 +89,13 @@ bool waypoint_forward()
 
   double ang = atan2(x,y);
   if (ang >= 0){
-    waypoint_forward = true;
+    waypoint_is_forward = true;
   }
   else if (ang < 0){
-    waypoint_forward = false;
+    waypoint_is_forward = false;
   }
 
-  return waypoint_forward;
+  return waypoint_is_forward;
 }
 
 ///

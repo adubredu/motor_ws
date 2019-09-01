@@ -147,14 +147,7 @@ void autonomyMode_activate(const std_msgs::Bool::ConstPtr& data)
 
 void backwardHandler(const std_msgs::Bool::ConstPtr& data)
 {
-  if (data->data)
-  {
-    wp_backward = true;
-  }
-  else
-  {
-    wp_backward = false;
-  }
+  wp_backward = data->data;
 }
 
 
@@ -205,6 +198,7 @@ int main(int argc, char** argv)
       {
         robotSpeed = 0;
         robotYawRate = -1;
+        ROS_INFO("Turning");
       }
 
       if (goalReached())

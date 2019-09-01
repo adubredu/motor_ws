@@ -10,6 +10,7 @@
 #include <nav_msgs/Odometry.h>
 #include <geometry_msgs/PointStamped.h>
 #include <geometry_msgs/PoseArray.h>
+#include <std_msgs/Bool.h>
 #include <sensor_msgs/PointCloud2.h>
 
 #include <pcl_conversions/pcl_conversions.h>
@@ -33,6 +34,7 @@ ros::Publisher pubPoint;
 ros::Publisher pubAltPath;
 ros::Publisher pubAltWaypoints;
 ros::Publisher pubTurn;
+ros::Publisher pubBack;
 double tolerance = 0.5;
 
 bool waypoint_received = false;
@@ -208,20 +210,21 @@ void send_chosen_waypoint()
 			// // pubPoint.publish(in_waypoint);
 
 
-			while(not waypoint_forward())
-			{
-				geometry_msgs::Twist turn;
-				turn.angular.z = -1;
-				pubTurn.publish(turn);
-			}
+			std_msgs::Bool backward;
+			backward.data =  true;
+			pubBack.publish(backward);
 		}
 
-		//else
-		//{
-			int ind =  arg_min(score, num_paths);
-			in_waypoint.point.x = occX[ind];
-			in_waypoint.point.y = occY[ind];
-		//}
+		else		
+		{
+			std_msgs::Bool backward;
+			backward.data =  false;
+			pubBack.publish(backward);
+		}
+
+		int ind =  arg_min(score, num_paths);
+		in_waypoint.point.x = occX[ind];
+		in_waypoint.point.y = occY[ind];
 
 		if (goalReached())
 		{
@@ -313,6 +316,7 @@ int main(int argc, char **argv)
   	pubAltPath = nh.advertise<geometry_msgs::PoseArray>("/alternate_paths",5);
   	pubAltWaypoints = nh.advertise<sensor_msgs::PointCloud2>("/alternate_waypoints",5);
   	pubTurn = nh.advertise<geometry_msgs::Twist>("/cmd_vel",5);
+  	pubBack = nh.advertise<std_msgs::Bool>("/wp_backward",1);
 
   	initialize_arrays();
 

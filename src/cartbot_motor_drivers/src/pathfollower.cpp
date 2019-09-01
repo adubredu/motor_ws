@@ -65,6 +65,7 @@ double real_speed = 1.0;
 
 double goalX = 0, goalY = 0;
 double tolerance = 0.5;
+bool wp_backward = false;
 
 nav_msgs::Path path;
 
@@ -144,6 +145,18 @@ void autonomyMode_activate(const std_msgs::Bool::ConstPtr& data)
   }
 }
 
+void backwardHandler(const std_msgs::Bool::ConstPtr& data)
+{
+  if (data->data)
+  {
+    wp_backward = true;
+  }
+  else
+  {
+    wp_backward = false;
+  }
+}
+
 
 
 int main(int argc, char** argv)
@@ -155,6 +168,7 @@ int main(int argc, char** argv)
   ros::Subscriber subJoystick = nh.subscribe<sensor_msgs::Joy> ("/joy", 5, joystickHandler);
   ros::Subscriber subGoal = nh.subscribe<geometry_msgs::PointStamped> ("/local_waypoint", 5, waypointHandler);
   ros::Subscriber subAutonomy = nh.subscribe<std_msgs::Bool> ("/activate_autonomy", 1, autonomyMode_activate);
+  ros::Subscriber subDirection = nh.subscribe<std_msgs::Bool> ("/wp_backward", 1, backwardHandler);
   ros::Publisher pubSpeed = nh.advertise<geometry_msgs::Twist>("/cmd_vel",5);
   geometry_msgs::Twist cmd_spd;
 
@@ -186,6 +200,12 @@ int main(int argc, char** argv)
 
       if (not waypoint_forward())
         robotSpeed = 0;
+
+      if (wp_backward)
+      {
+        robotSpeed = 0;
+        robotYawRate = -1;
+      }
 
       if (goalReached())
       {

@@ -197,7 +197,7 @@ int main(int argc, char** argv)
       if (wp_backward)
       {
         robotSpeed = 0;
-        robotYawRate = -1;
+        robotYawRate = 1;
         ROS_INFO("Turning");
       }
 

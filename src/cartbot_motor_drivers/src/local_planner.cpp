@@ -32,6 +32,7 @@ double range = 1.0;
 ros::Publisher pubPoint;
 ros::Publisher pubAltPath;
 ros::Publisher pubAltWaypoints;
+double tolerance = 0.5;
 
 bool waypoint_received = false;
 
@@ -176,6 +177,16 @@ void score_alternate_waypoints(double x, double y)
 	}
 }
 
+
+bool goalReached()
+{
+  double distance = sqrt(pow((robotX - goalX),2) + pow((robotY - goalY),2));
+  if (distance < tolerance)
+    return true;
+
+  return false;
+}
+
 ///
 void send_chosen_waypoint()
 {
@@ -187,12 +198,12 @@ void send_chosen_waypoint()
 			initialize_occupancy();
 			score_alternate_waypoints(-goalX,-goalY);
 			int ind = arg_min(score, num_paths);
-			in_waypoint.point.x = -occX[ind];
-			in_waypoint.point.y = -occY[ind];
-			pubPoint.publish(in_waypoint);
-
-			// in_waypoint.point.x = -occX[num_paths/2];
-			// in_waypoint.point.y = occY[num_paths/2];
+			double x = occX[ind];
+			double y = occY[ind];
+			// in_waypoint.point.x = -occX[ind];
+			// in_waypoint.point.y = -occY[ind];
+			in_waypoint.point.x =robotX-(x-robotX);
+			in_waypoint.point.y = robotY-(y-robotY);
 			// pubPoint.publish(in_waypoint);
 		}
 
@@ -201,13 +212,18 @@ void send_chosen_waypoint()
 			int ind =  arg_min(score, num_paths);
 			in_waypoint.point.x = occX[ind];
 			in_waypoint.point.y = occY[ind];
-			pubPoint.publish(in_waypoint);
 		}
+
+		if (goalReached())
+		{
+			in_waypoint.point.x = goalX;
+			in_waypoint.point.y = goalY;
+			
+		}
+
+		pubPoint.publish(in_waypoint);
 	}
 }
-
-///
-
 
 ///
 void display_alternate_paths()
@@ -298,11 +314,16 @@ int main(int argc, char **argv)
   	{
   		ros::spinOnce();
 
-  		initialize_occupancy();
-  		check_for_occupancy();
-  		display_alternate_paths();
-  		score_alternate_waypoints(goalX, goalY);
-  		send_chosen_waypoint();
+  		if (not goalReached())
+  		{
+  			initialize_occupancy();
+	  		check_for_occupancy();
+	  		display_alternate_paths();
+	  		score_alternate_waypoints(goalX, goalY);
+	  		send_chosen_waypoint();
+
+  		}
+  		
 
 
   		status = ros::ok();

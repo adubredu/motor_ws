@@ -106,7 +106,7 @@ class SendSpeedToMotors():
         # rospy.loginfo("-D- twistCallback: %s" % str(msg))
         self.ticks_since_target = 0
         self.dx = msg.linear.x
-        self.dr = -msg.angular.z
+        self.dr = msg.angular.z
         self.dy = msg.linear.y
         self.send_speed_to_motors()
     

@@ -88,10 +88,10 @@ void odomHandler(const nav_msgs::Odometry::ConstPtr& odomIn)
 
 void joystickHandler(const sensor_msgs::Joy::ConstPtr& joy)
 {
-  joySpeed = sqrt(pow(joy->axes[4],2) + pow(joy->axes[5],2));
-    if (joy->axes[5] == 0) joySpeed = 0;
-    if (joy->axes[5] < 0) joySpeed*=-1;
-  joyYaw = joy->axes[4];
+  joySpeed = sqrt(pow(joy->axes[2],2) + pow(joy->axes[3],2));
+    if (joy->axes[3] == 0) joySpeed = 0;
+    if (joy->axes[3] < 0) joySpeed*=-1;
+  joyYaw = joy->axes[2];
   autonomyMode = false;
 }
 
